@@ -1,0 +1,460 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+import pandas as pd
+
+
+# In[2]:
+
+
+df = pd.read_csv('C:/Users/Raghavendra K/Downloads/zomato.csv')
+
+
+# In[3]:
+
+
+df.head()
+
+
+# In[4]:
+
+
+df.shape
+
+
+# In[5]:
+
+
+df.columns
+
+
+# In[6]:
+
+
+df.info()
+
+
+# In[7]:
+
+
+df = df.drop(['url', 'address', 'phone', 'menu_item', 'dish_liked', 'reviews_list'], axis =1)
+df.head()
+
+
+# In[8]:
+
+
+df.drop_duplicates(inplace = True)
+df.shape
+
+
+# In[9]:
+
+
+import numpy as np
+
+
+# In[10]:
+
+
+df['rate'].unique()
+
+
+# In[13]:
+
+
+df.handlerate(value):
+    if(value=='NEW' or value== '-'):
+        return np.nan
+    else:
+        value = str(value).split('/')
+        value = value[0]
+        return float(value)
+    
+ 
+
+
+# In[14]:
+
+
+df['rate'] = df['rate'].apply(handlerate)
+
+
+# In[15]:
+
+
+df['rate'].head()
+
+
+# In[16]:
+
+
+df.rate.isnull().sum()
+
+
+# In[15]:
+
+
+df['rate'].fillna(df['rate'].mean(), inplace = True)
+df['rate'].isnull().sum()
+
+
+# In[16]:
+
+
+df.info()
+
+
+# In[17]:
+
+
+df.dropna(inplace = True)
+df.head()
+
+
+# In[22]:
+
+
+df.rename(columns ={'approx_cost(for two people)':'cost_paltes', 'listed_in(type)':'Type'}, inplace = True)
+df.head()
+
+
+# In[19]:
+
+
+df['location'].unique()
+
+
+# In[20]:
+
+
+df['listed_in(city)'].unique()
+
+
+# In[21]:
+
+
+df = df.drop(['listed_in(city)'], axis = 1)
+
+
+# In[22]:
+
+
+df.head()
+
+
+# In[11]:
+
+
+df ['cost_plates'].unique()
+
+
+# In[ ]:
+
+
+def handlecomma(value):
+    value = str(value)
+    if',' in value:
+        value = value.replace(',','')
+        return float(value)
+    else:
+        return float(value)
+    
+
+
+# In[ ]:
+
+
+df['cost_plates'] = df['cost_plates'].apply(handlecomma)
+df['cost_plates'].unique()
+
+
+# In[16]:
+
+
+df['rest_type'].value_counts()
+
+
+# In[17]:
+
+
+rest_types = df['rest_type'].value_counts(ascending = False)
+rest_types
+
+
+# In[19]:
+
+
+rest_types_lessthan1000 = rest_types[rest_types<1000]
+rest_types_lessthan1000
+
+
+# In[20]:
+
+
+def handle_rest_type(value):
+    if(value in rest_types_lessthan1000):
+        return 'others'
+    else:
+        return value
+    
+df['rest_type'] = df['rest_type'].apply(handle_rest_type)
+df['rest_type'].value_counts()
+
+
+# In[26]:
+
+
+df.head()
+
+
+# In[25]:
+
+
+df['location'].value_counts()
+
+
+# In[26]:
+
+
+location = df['location'].value_counts(ascending = False)
+location_lessthan300 = location[location<300]
+
+def handle_location(value):
+    if(value in location_lessthan300):
+        return 'others'
+    else:
+        return value
+    
+df['location'] = df['location'].apply(handle_location)
+df['location'].value_counts()
+
+
+# In[27]:
+
+
+df['cuisines'].value_counts()
+
+
+# In[28]:
+
+
+cuisines = df['cuisines'].value_counts(ascending = False)
+cuisines_lessthan100 = cuisines[cuisines<100]
+
+def handle_cuisines(value):
+    if(value in cuisines_lessthan100):
+        return 'others'
+    else:
+        return value
+    
+df['cuisines'] = df['cuisines'].apply(handle_cuisines)
+df['cuisines'].value_counts()
+
+
+# In[29]:
+
+
+df.head()
+
+
+# In[30]:
+
+
+df['Type'].value_counts()
+
+
+# In[31]:
+
+
+import seaborn as sns
+
+
+# In[32]:
+
+
+import matplotlib.pyplot as plt
+
+
+# In[33]:
+
+
+plt.figure(figsize = (16,10))
+ax = sns.countplot(df['location'])
+plt.xticks(rotation=90)
+
+
+# In[34]:
+
+
+plt.figure(figsize = (6,6))
+sns.countplot(df['online_order'],palette = 'inferno')
+
+
+# In[35]:
+
+
+plt.figure(figsize = (6,6))
+sns.countplot(df['book_table'],palette = 'rainbow')
+
+
+# In[36]:
+
+
+plt.figure(figsize = (6,6))
+sns.boxplot(x ='online_order',y='rate',data=df)
+
+
+# In[37]:
+
+
+plt.figure(figsize = (6,6))
+sns.boxplot(x ='book_table',y='rate',data=df)
+
+
+# In[38]:
+
+
+df1= df.groupby(['location', 'online_order'])['name'].count()
+df1.to_csv('location_online.csv')
+df1= pd.read_csv('location_online.csv')
+df1 = pd.pivot_table(df1, values=None, index=['location'], columns=['online_order'] )
+df1
+
+
+# In[39]:
+
+
+df1.plot(kind = 'bar', figsize = (15,8))
+
+
+# In[40]:
+
+
+df2= df.groupby(['location', 'book_table'])['name'].count()
+df2.to_csv('location_booktable.csv')
+df2= pd.read_csv('location_booktable.csv')
+df2 = pd.pivot_table(df2, values=None, index=['location'], columns=['book_table'])
+df2
+
+
+# In[41]:
+
+
+df2.plot(kind = 'bar', figsize = (15,8))
+
+
+# In[42]:
+
+
+plt.figure(figsize=(14, 8))
+sns.boxplot(x = 'Type', y = 'rate', data = df, palette = 'inferno')
+
+
+# In[43]:
+
+
+df.head()
+
+
+# In[44]:
+
+
+df3= df.groupby(['location', 'Type'])['name'].count()
+df3.to_csv('location_Type.csv')
+df3= pd.read_csv('location_Type.csv')
+df3 = pd.pivot_table(df3, values=None, index=['location'], columns=['Type'] )
+df3
+
+
+# In[45]:
+
+
+df3.plot(kind = 'bar', figsize = (36,8))
+
+
+# In[46]:
+
+
+df4 = df[['location','votes']]
+df4.drop_duplicates()
+df5 = df4.groupby(['location'])['votes'].sum()
+df5 = df5.to_frame()
+df5 = df5.sort_values('votes', ascending=False)
+df5.head()
+
+
+# In[47]:
+
+
+plt.figure(figsize = (15,8))
+sns.barplot(df5.index, df5['votes'])
+plt.xticks(rotation=90)
+
+
+# In[48]:
+
+
+df6 = df[['cuisines', 'votes']]
+df6.drop_duplicates()
+df7 = df6.groupby(['cuisines'])['votes'].sum()
+df7 = df7.to_frame()
+df7 = df7.sort_values('votes', ascending=False)
+df7.head()
+
+
+# In[49]:
+
+
+df7 = df7.iloc[1:,:]
+df7.head()
+
+
+# In[ ]:
+
+
+
+
+
+# In[50]:
+
+
+plt.figure(figsize = (15,8))
+sns.barplot(df7.index, df7['votes'])
+plt.xticks(rotation = 90)
+
+
+# In[1]:
+
+
+get_ipython().system('pip install sweetviz')
+
+
+# In[2]:
+
+
+get_ipython().system('pip install Ipython')
+
+
+# In[15]:
+
+
+import sweetviz as sv
+analyze_report = sv.analyze(df)
+analyze_report.show_html('analyze.html', open_browser=False)
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
